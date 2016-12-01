@@ -1,4 +1,5 @@
 #!/bin/sh
+#
 ## Fonction pour générer un password.
 ## "randpw" pour générer un mot de passe aléatoire de 32 caractères
 ## "randpw <n>" pour générer un mot de passe aléatoire de <n> caractères
