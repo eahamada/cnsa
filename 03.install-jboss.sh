@@ -11,9 +11,10 @@ export KEYSTORE_PATH=${KEYSTORE_PATH:=/root/.keystore}
 export KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:=passw0rd}
 export WORKDIR=${WORKDIR:=`mktemp -d`}
 rm -fr $WORKDIR/* $KEYSTORE_PATH
-$(ps -o pid= -u $JBOSS_USER | xargs kill -1 2>/dev/null) || echo 'no process to kill'userdel -fr $JBOSS_USER
-groupdel $JBOSS_GROUP
-userdel -fr $JBOSS_USER
+ps -o pid= -u $JBOSS_USER | xargs kill -1 2>/dev/null||true
+userdel -fr $JBOSS_USER||true
+groupdel $JBOSS_GROUP||true
+
 cd $WORKDIR
 
 wget http://download.jboss.org/jbossas/7.1/jboss-as-7.1.1.Final/jboss-as-7.1.1.Final.tar.gz
