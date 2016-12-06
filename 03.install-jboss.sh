@@ -53,10 +53,10 @@ sed -i -e '258 i\<connector name="https" protocol="HTTP/1.1" scheme="https" sock
 keytool -importcert \
     -file /etc/openldap/cacerts/ldap.crt \
     -alias ldap \
-    -keystore ldapTrustStore \
+    -keystore  $KEYSTORE_PATH \
     -storepass $KEYSTORE_PASSWORD \
     -noprompt
-sed -i -e '29 i\<system-properties>\n<property name="javax.net.ssl.trustStore" value="'$KEYSTORE_PATH'/ldapTrustStore"/>\n <property name="javax.net.ssl.trustStorePassword" value="'$KEYSTORE_PASSWORD'"/>\n</system-properties>' -- $JBOSS_HOME/standalone/configuration/standalone.xml
+sed -i -e '29 i\<system-properties>\n<property name="javax.net.ssl.trustStore" value="'$KEYSTORE_PATH'"/>\n <property name="javax.net.ssl.trustStorePassword" value="'$KEYSTORE_PASSWORD'"/>\n</system-properties>' -- $JBOSS_HOME/standalone/configuration/standalone.xml
 sed -i -e '284 i\<inet-address value="${jboss.bind.address.management:0.0.0.0}"/>' -e '287 i\<inet-address value="${jboss.bind.address:0.0.0.0}"/>'  -e '284d;287d' -- $JBOSS_HOME/standalone/configuration/standalone.xml
 sed -i -e '200 i\<subsystem xmlns="urn:jboss:domain:naming:1.1">\n<bindings>\n<simple name="java:global/sepannuaire.ws.config.path" value="'$CONF_PATH_WS'" type="java.lang.String"/>\n<simple name="java:global/sepannuaire.web.config.path" value="'$CONF_PATH_WEB'" type="java.lang.String"/>\n</bindings>\n</subsystem>\n' -e '200d' -- $JBOSS_HOME/standalone/configuration/standalone.xml
 service jboss start
