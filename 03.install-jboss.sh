@@ -8,7 +8,7 @@ export JBOSS_HOME=${JBOSS_HOME:=/usr/share/jboss-as}
 export JBOSS_PASSWORD=${JBOSS_PASSWORD:=passw0rd}
 export JBOSS_GROUP=${JBOSS_GROUP:=jboss}
 export JBOSS_USER=${JBOSS_USER:=jboss}
-export KEYSTORE_PATH=${KEYSTORE_PATH:=JBOSS_HOME/.keystore}
+export KEYSTORE_PATH=${KEYSTORE_PATH:=$JBOSS_HOME/.keystore}
 export KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:=passw0rd}
 
 rm -fr /etc/jboss-as
