@@ -1,31 +1,56 @@
 #!/bin/sh
 
-wget http://download.jboss.org/jbossas/7.1/jboss-as-7.1.1.Final/jboss-as-7.1.1.Final.zip
-unzip -q jboss-as-7.1.1.Final.zip -d /usr/share && rm -fr jboss-as-7.1.1.Final.zip
-mv /usr/share/jboss-as-7.1.1.Final /usr/share/jboss-as
+
+unset CONF_PATH_WS CONF_PATH_WEB JBOSS_HOME JBOSS_PASSWORD JBOSS_USER KEYSTORE_PATH KEYSTORE_PASSWORD WORKDIR
+export CONF_PATH_WS=${CONF_PATH_WS:=/tmp}
+export CONF_PATH_WEB=${CONF_PATH_WEB:=/tmp/web}
+export JBOSS_HOME=${JBOSS_HOME:=/usr/share/jboss-as}
+export JBOSS_PASSWORD=${JBOSS_PASSWORD:=passw0rd}
+export JBOSS_GROUP=${JBOSS_GROUP:=jboss}
+export JBOSS_USER=${JBOSS_USER:=jboss}
+export KEYSTORE_PATH=${KEYSTORE_PATH:=/root/.keystore}
+export KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:=passw0rd}
+export WORKDIR=${WORKDIR:=`mktemp -d`}
+rm -fr $JBOSS_HOME
+rm -fr $WORKDIR/*
+killall -u $JBOSS_USER -m .
+userdel -fr $JBOSS_USER
+groupdel $JBOSS_GROUP
+cd $WORKDIR
+
+wget http://download.jboss.org/jbossas/7.1/jboss-as-7.1.1.Final/jboss-as-7.1.1.Final.tar.gz
+mkdir -p $JBOSS_HOME && tar -xzf jboss-as-7.1.1.Final.tar.gz -C $JBOSS_HOME --strip-components=1
 groupadd jboss
-useradd -s /bin/bash -g jboss jboss
-chown -Rf jboss.jboss /usr/share/jboss-as/
-for i in ~/.bash_profile /home/jboss/.bash_profile;do 
-cat >> ~/.bash_profile <<EOF
-JAVA_HOME=/usr/java/jdk1.7.0_79
-export JAVA_HOME  
-PATH=\$JAVA_HOME/bin:\$PATH  
-export PATH
-EOF
-done
-. ~/.bash_profile
-export JBOSS_HOME=/usr/share/jboss-as
-$JBOSS_HOME/bin/add-user.sh --silent=true jboss ${JBOSS_PASSWORD:=passw0rd}
+useradd -s /bin/bash -g jboss $JBOSS_USER -d $JBOSS_HOME
+chown -Rf jboss.jboss $JBOSS_HOME
+
+$JBOSS_HOME/bin/add-user.sh --silent=true jboss $JBOSS_PASSWORD
 cp $JBOSS_HOME/bin/init.d/jboss-as-standalone.sh /etc/rc.d/init.d/jboss
-sed -i -e '5s/-/234' -e '17i\\nJBOSS_USER=jboss \nexport JBOSS_USER' -- /etc/rc.d/init.d/jboss
 chmod +x /etc/rc.d/init.d/jboss
 chkconfig --add jboss
-service jboss start
+cat > /etc//jboss-as/jboss-as.conf <<EOF
+JBOSS_HOME=$JBOSS_HOME
+JBOSS_CONSOLE_LOG=/var/log/jboss-console.log
+JBOSS_USER=$JBOSS_USER
+EOF
 
- keytool -genkey -dname "CN=cnsa.fr,O=CNSA, L=Paris, ST=IDF, C=FR" -alias tomcat -validity 1825 -keyalg RSA -keystore ${KEYSTORE_PATH:=/root/.keystore} -keypass ${KEYSTORE_PASSWORD:=passw0rd} -storepass ${KEYSTORE_PASSWORD}
- sed -i -e '258 i\<connector name="https" protocol="HTTP/1.1" scheme="https" socket-binding="https" secure="true">\n<ssl password="'${KEYSTORE_PASSWORD}'" key-alias="tomcat"/> \n</connector>' -- $JBOSS_HOME/standalone/configuration/standalone.xml
- keytool -importcert -file ~/ldap.crt -alias ldap -keystore ldapTrustStore -storepass ${KEYSTORE_PASSWORD} -noprompt
- sed -i -e '29 i\<system-properties>\n<property name="javax.net.ssl.trustStore" value="'${KEYSTORE_PATH}'/ldapTrustStore"/>\n <property name="javax.net.ssl.trustStorePassword" value="'${KEYSTORE_PASSWORD}'"/>\n</system-propertes>' -- $JBOSS_HOME/standalone/configuration/standalone.xml
- sed -i -e '200 i\<subsystem xmlns="urn:jboss:domain:naming:1.4">\n<bindings>\n<simple name="java:global/sepannuaire.ws.config.path" value="'${CONF_PATH_WS}'" type="java.lang.String"/>\n<simple name="java:global/sepannuaire.web.config.path" value="'${CONF_PATH_WEB}'" type="java.lang.String"/>\n</bindings>\n<remote-naming/>\n</subsystem>\n' -e '200d' -- $JBOSS_HOME/standalone/configuration/standalone.xml
- 
+keytool -genkey \
+    -dname "CN=cnsa.fr,O=CNSA, L=Paris, ST=IDF, C=FR" \
+    -alias tomcat \
+    -validity 1825 \
+    -keyalg RSA \
+    -keystore $KEYSTORE_PATH \
+    -keypass $KEYSTORE_PASSWORD \
+    -storepass $KEYSTORE_PASSWORD
+sed -i -e '258 i\<connector name="https" protocol="HTTP/1.1" scheme="https" socket-binding="https" secure="true">\n<ssl password="'${KEYSTORE_PASSWORD}'" key-alias="tomcat"/> \n</connector>' -- $JBOSS_HOME/standalone/configuration/standalone.xml
+
+keytool -importcert \
+    -file ldap.crt \
+    -alias ldap \
+    -keystore ldapTrustStore \
+    -storepass $KEYSTORE_PASSWORD \
+    -noprompt
+sed -i -e '29 i\<system-properties>\n<property name="javax.net.ssl.trustStore" value="'$KEYSTORE_PATH'/ldapTrustStore"/>\n <property name="javax.net.ssl.trustStorePassword" value="'$KEYSTORE_PASSWORD'"/>\n</system-propertes>' -- $JBOSS_HOME/standalone/configuration/standalone.xml
+sed -i -e '284 i\<any-ipv4-address/>' -e '287 i\<any-ipv4-address/>'  -e '284d;287d' -- $JBOSS_HOME/standalone/configuration/standalone.xml
+sed -i -e '200 i\<subsystem xmlns="urn:jboss:domain:naming:1.4">\n<bindings>\n<simple name="java:global/sepannuaire.ws.config.path" value="'$CONF_PATH_WS'" type="java.lang.String"/>\n<simple name="java:global/sepannuaire.web.config.path" value="'$CONF_PATH_WEB'" type="java.lang.String"/>\n</bindings>\n<remote-naming/>\n</subsystem>\n' -e '200d' -- $JBOSS_HOME/standalone/configuration/standalone.xml
+service jboss start
