@@ -10,7 +10,7 @@ export JBOSS_USER=${JBOSS_USER:=jboss}
 export KEYSTORE_PATH=${KEYSTORE_PATH:=/root/.keystore}
 export KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:=passw0rd}
 export WORKDIR=${WORKDIR:=`mktemp -d`}
-rm -fr $WORKDIR/* $KEYSTORE_PATH
+rm -fr $WORKDIR/* $KEYSTORE_PATH /etc/jboss-as
 ps -o pid= -u $JBOSS_USER | xargs kill -1 2>/dev/null||true
 userdel -fr $JBOSS_USER 2>/dev/null||true
 groupdel $JBOSS_GROUP 2>/dev/null||true
@@ -50,6 +50,7 @@ keytool -importcert \
     -noprompt
 sed -i -e '29 i\<system-properties>\n<property name="javax.net.ssl.trustStore" value="'$KEYSTORE_PATH'/ldapTrustStore"/>\n <property name="javax.net.ssl.trustStorePassword" value="'$KEYSTORE_PASSWORD'"/>\n</system-properties>' -- $JBOSS_HOME/standalone/configuration/standalone.xml
 sed -i -e '284 i\<any-ipv4-address/>' -e '287 i\<any-ipv4-address/>'  -e '284d;287d' -- $JBOSS_HOME/standalone/configuration/standalone.xml
-sed -i -e '200 i\<subsystem xmlns="urn:jboss:domain:naming:1.4">\n<bindings>\n<simple name="java:global/sepannuaire.ws.config.path" value="'$CONF_PATH_WS'" type="java.lang.String"/>\n<simple name="java:global/sepannuaire.web.config.path" value="'$CONF_PATH_WEB'" type="java.lang.String"/>\n</bindings>\n<remote-naming/>\n</subsystem>\n' -e '200d' -- $JBOSS_HOME/standalone/configuration/standalone.xml
+sed -i -e '200 i\<subsystem xmlns="urn:jboss:domain:naming:1.1">\n<bindings>\n<simple name="java:global/sepannuaire.ws.config.path" value="'$CONF_PATH_WS'" type="java.lang.String"/>\n<simple name="java:global/sepannuaire.web.config.path" value="'$CONF_PATH_WEB'" type="java.lang.String"/>\n</bindings>\n<remote-naming/>\n</subsystem>\n' -e '200d' -- $JBOSS_HOME/standalone/configuration/standalone.xml
 chown -Rf jboss.jboss $JBOSS_HOME
 service jboss start
+rm -fr $WORKDIR
