@@ -12,22 +12,22 @@ export KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:=passw0rd}
 export WORKDIR=${WORKDIR:=`mktemp -d`}
 rm -fr $WORKDIR/* $KEYSTORE_PATH
 ps -o pid= -u $JBOSS_USER | xargs kill -1 2>/dev/null||true
-userdel -fr $JBOSS_USER||true
-groupdel $JBOSS_GROUP||true
+userdel -fr $JBOSS_USER 2>/dev/null||true
+groupdel $JBOSS_GROUP 2>/dev/null||true
 
 cd $WORKDIR
 
-wget http://download.jboss.org/jbossas/7.1/jboss-as-7.1.1.Final/jboss-as-7.1.1.Final.tar.gz
-mkdir -p $JBOSS_HOME && tar -xzf jboss-as-7.1.1.Final.tar.gz -C $JBOSS_HOME --strip-components=1
 groupadd jboss
 useradd -s /bin/bash -g jboss $JBOSS_USER -d $JBOSS_HOME
 chown -Rf jboss.jboss $JBOSS_HOME
+wget http://download.jboss.org/jbossas/7.1/jboss-as-7.1.1.Final/jboss-as-7.1.1.Final.tar.gz
+tar -xzf jboss-as-7.1.1.Final.tar.gz -C $JBOSS_HOME --strip-components=1
 
 $JBOSS_HOME/bin/add-user.sh --silent=true jboss $JBOSS_PASSWORD
 cp $JBOSS_HOME/bin/init.d/jboss-as-standalone.sh /etc/rc.d/init.d/jboss
 chmod +x /etc/rc.d/init.d/jboss
 chkconfig --add jboss
-cat > /etc/jboss-as/jboss-as.conf <<EOF
+mkdir /etc/jboss-as && cat > /etc/jboss-as/jboss-as.conf <<EOF
 JBOSS_HOME=$JBOSS_HOME
 JBOSS_CONSOLE_LOG=/var/log/jboss-console.log
 JBOSS_USER=$JBOSS_USER
