@@ -62,6 +62,20 @@ sed -i -e '200 i\<subsystem xmlns="urn:jboss:domain:naming:1.1">\n<bindings>\n<s
 chown -Rf $JBOSS_USER:$JBOSS_GROUP $JBOSS_HOME
 service jboss start
  
+cat > $CONF_PATH_WS/ldap.properties <<EOF
+url=ldap://$VIP_LDAP:$PORT_LDAP
+base=dc=annuaire,dc=cnsa
+userDn=uid=service_administration,ou=gestion,dc=annuaire,dc=cnsa
+password=$DATA_SERVICE_PASSWORD
+timeOut=$TIMEOUT
+
+urlAD=ldap://$IP_ACTIVE_DIRECTORY:$PORT_ACTIVE_DIRECTORY
+baseAD=$BASE_ACTIVE_DIRECTORY
+userDnAD=$DN_COMPTE_LECTURE
+passwordAD=$MDP_COMPTE_LECTURE
+timeOutAD=$TIMEOUT_AD
+EOF
+
 
 ## 5.2.5	CONFIGURATION DE L’APPLICATION
 # mkdir -p $CONF_PATH_WS && mv ldap.properties mail.properties web-services.properties rest-services.properties traces.properties web-services-finess.properties applications.properties $CONF_PATH_WS
