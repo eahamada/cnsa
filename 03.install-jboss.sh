@@ -45,7 +45,7 @@ keytool -genkey \
 sed -i -e '258 i\<connector name="https" protocol="HTTP/1.1" scheme="https" socket-binding="https" secure="true">\n<ssl password="'${KEYSTORE_PASSWORD}'" key-alias="tomcat"/> \n</connector>' -- $JBOSS_HOME/standalone/configuration/standalone.xml
 
 keytool -importcert \
-    -file ldap.crt \
+    -file /etc/openldap/cacerts/ldap.crt \
     -alias ldap \
     -keystore ldapTrustStore \
     -storepass $KEYSTORE_PASSWORD \
