@@ -1,5 +1,4 @@
-#!/bin/sh
-
+#!/bin/bash -e
 
 unset CONF_PATH_WS CONF_PATH_WEB JBOSS_HOME JBOSS_PASSWORD JBOSS_USER KEYSTORE_PATH KEYSTORE_PASSWORD WORKDIR
 export CONF_PATH_WS=${CONF_PATH_WS:=/tmp}
@@ -11,9 +10,8 @@ export JBOSS_USER=${JBOSS_USER:=jboss}
 export KEYSTORE_PATH=${KEYSTORE_PATH:=/root/.keystore}
 export KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:=passw0rd}
 export WORKDIR=${WORKDIR:=`mktemp -d`}
-rm -fr $JBOSS_HOME
-rm -fr $WORKDIR/*
-killall -u $JBOSS_USER -m .
+rm -fr $JBOSS_HOME $WORKDIR/* $KEYSTORE_PATH
+ps -o pid= -u jboss | xargs kill -1
 userdel -fr $JBOSS_USER
 groupdel $JBOSS_GROUP
 cd $WORKDIR
