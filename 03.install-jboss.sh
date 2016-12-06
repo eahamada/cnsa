@@ -8,7 +8,7 @@ export JBOSS_HOME=${JBOSS_HOME:=/usr/share/jboss-as}
 export JBOSS_PASSWORD=${JBOSS_PASSWORD:=passw0rd}
 export JBOSS_GROUP=${JBOSS_GROUP:=jboss}
 export JBOSS_USER=${JBOSS_USER:=jboss}
-export KEYSTORE_PATH=${KEYSTORE_PATH:=$JBOSS_HOME/.keystore}
+export KEYSTORE_PATH=${KEYSTORE_PATH:=$JBOSS_HOME/standalone/configuration}
 export KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:=passw0rd}
 
 rm -fr /etc/jboss-as
@@ -45,15 +45,15 @@ keytool -genkey \
     -alias tomcat \
     -validity 1825 \
     -keyalg RSA \
-    -keystore $KEYSTORE_PATH \
+    -keystore $KEYSTORE_PATH/tomcat \
     -keypass $KEYSTORE_PASSWORD \
     -storepass $KEYSTORE_PASSWORD
-sed -i -e '258 i\<connector name="https" protocol="HTTP/1.1" scheme="https" socket-binding="https" secure="true">\n<ssl password="'${KEYSTORE_PASSWORD}'" key-alias="tomcat"/> \n</connector>' -- $JBOSS_HOME/standalone/configuration/standalone.xml
+sed -i -e '258 i\<connector name="https" protocol="HTTP/1.1" scheme="https" socket-binding="https" secure="true">\n<ssl password="'${KEYSTORE_PASSWORD}'" key-alias="tomcat"  keystoreFile="'$KEYSTORE_PATH'/tomcat"/> \n</connector>' -- $JBOSS_HOME/standalone/configuration/standalone.xml
 
 keytool -importcert \
     -file /etc/openldap/cacerts/ldap.crt \
     -alias ldap \
-    -keystore  ldapTrusStore \
+    -keystore  $KEYSTORE_PATH/ldapTrusStore \
     -storepass $KEYSTORE_PASSWORD \
     -noprompt
 sed -i -e '29 i\<system-properties>\n<property name="javax.net.ssl.trustStore" value="'$KEYSTORE_PATH'/ldapTrusStore"/>\n <property name="javax.net.ssl.trustStorePassword" value="'$KEYSTORE_PASSWORD'"/>\n</system-properties>' -- $JBOSS_HOME/standalone/configuration/standalone.xml
