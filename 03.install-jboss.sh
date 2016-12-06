@@ -10,7 +10,7 @@ export JBOSS_USER=${JBOSS_USER:=jboss}
 export KEYSTORE_PATH=${KEYSTORE_PATH:=/root/.keystore}
 export KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:=passw0rd}
 export WORKDIR=${WORKDIR:=`mktemp -d`}
-rm -fr $JBOSS_HOME $WORKDIR/* $KEYSTORE_PATH
+rm -fr $WORKDIR/* $KEYSTORE_PATH
 $(ps -o pid= -u $JBOSS_USER | xargs kill -1 2>/dev/null) || echo 'no process to kill'userdel -fr $JBOSS_USER
 groupdel $JBOSS_GROUP
 userdel -fr $JBOSS_USER
