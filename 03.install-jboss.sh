@@ -28,7 +28,7 @@ export JAVA_HOME
 PATH=\$JAVA_HOME/bin:$PATH
 export PATH
 EOF
-mkdir /etc/jboss-as && cat > /etc/jboss-as/jboss-as.conf <<EOF
+mkdir -p /etc/jboss-as && cat > /etc/jboss-as/jboss-as.conf <<EOF
 JBOSS_HOME=$JBOSS_HOME
 JBOSS_CONSOLE_LOG=/var/log/jboss-console.log
 JBOSS_USER=$JBOSS_USER
@@ -38,8 +38,8 @@ tar -xzf jboss-as-7.1.1.Final.tar.gz -C $JBOSS_HOME --strip-components=1
 cp $JBOSS_HOME/bin/init.d/jboss-as-standalone.sh /etc/rc.d/init.d/jboss-as
 chmod +x /etc/rc.d/init.d/jboss-as
 chkconfig --add jboss-as
-chown -Rf jboss.jboss $JBOSS_HOME
-$JBOSS_HOME/bin/add-user.sh --silent=true jboss $JBOSS_PASSWORD
+$JBOSS_HOME/bin/add-user.sh --silent=true $JBOSS_USER $JBOSS_PASSWORD
+cd $JBOSS_HOME
 keytool -genkey \
     -dname "CN=cnsa.fr,O=CNSA, L=Paris, ST=IDF, C=FR" \
     -alias tomcat \
@@ -53,10 +53,14 @@ sed -i -e '258 i\<connector name="https" protocol="HTTP/1.1" scheme="https" sock
 keytool -importcert \
     -file /etc/openldap/cacerts/ldap.crt \
     -alias ldap \
-    -keystore  $KEYSTORE_PATH \
+    -keystore  ldapTrusStore \
     -storepass $KEYSTORE_PASSWORD \
     -noprompt
-sed -i -e '29 i\<system-properties>\n<property name="javax.net.ssl.trustStore" value="'$KEYSTORE_PATH'"/>\n <property name="javax.net.ssl.trustStorePassword" value="'$KEYSTORE_PASSWORD'"/>\n</system-properties>' -- $JBOSS_HOME/standalone/configuration/standalone.xml
+sed -i -e '29 i\<system-properties>\n<property name="javax.net.ssl.trustStore" value="'$KEYSTORE_PATH'/ldapTrusStore"/>\n <property name="javax.net.ssl.trustStorePassword" value="'$KEYSTORE_PASSWORD'"/>\n</system-properties>' -- $JBOSS_HOME/standalone/configuration/standalone.xml
 sed -i -e '284 i\<inet-address value="${jboss.bind.address.management:0.0.0.0}"/>' -e '287 i\<inet-address value="${jboss.bind.address:0.0.0.0}"/>'  -e '284d;287d' -- $JBOSS_HOME/standalone/configuration/standalone.xml
 sed -i -e '200 i\<subsystem xmlns="urn:jboss:domain:naming:1.1">\n<bindings>\n<simple name="java:global/sepannuaire.ws.config.path" value="'$CONF_PATH_WS'" type="java.lang.String"/>\n<simple name="java:global/sepannuaire.web.config.path" value="'$CONF_PATH_WEB'" type="java.lang.String"/>\n</bindings>\n</subsystem>\n' -e '200d' -- $JBOSS_HOME/standalone/configuration/standalone.xml
 service jboss start
+
+## 5.2.5	CONFIGURATION DE L’APPLICATION
+# mkdir -p $CONF_PATH_WS && mv ldap.properties mail.properties web-services.properties rest-services.properties traces.properties web-services-finess.properties applications.properties $CONF_PATH_WS
+# mkdir -p $CONF_PATH_WEB && mv traces-web.properties sep-annuaire-web.properties $CONF_PATH_WEB
