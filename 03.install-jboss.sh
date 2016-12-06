@@ -48,7 +48,7 @@ keytool -genkey \
     -keystore $KEYSTORE_PATH/tomcat \
     -keypass $KEYSTORE_PASSWORD \
     -storepass $KEYSTORE_PASSWORD
-sed -i -e '258 i\<connector name="https" protocol="HTTP/1.1" scheme="https" socket-binding="https" secure="true">\n<ssl password="'${KEYSTORE_PASSWORD}'" key-alias="tomcat"  keystoreFile="'$KEYSTORE_PATH'/tomcat"/> \n</connector>' -- $JBOSS_HOME/standalone/configuration/standalone.xml
+sed -i -e '258 i\<connector name="https" protocol="HTTP/1.1" scheme="https" socket-binding="https" secure="true" keystoreFile="'$KEYSTORE_PATH'/tomcat">\n<ssl password="'${KEYSTORE_PASSWORD}'" key-alias="tomcat" /> \n</connector>' -- $JBOSS_HOME/standalone/configuration/standalone.xml
 
 keytool -importcert \
     -file /etc/openldap/cacerts/ldap.crt \
