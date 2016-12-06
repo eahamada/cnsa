@@ -35,9 +35,9 @@ JBOSS_USER=$JBOSS_USER
 EOF
 wget http://download.jboss.org/jbossas/7.1/jboss-as-7.1.1.Final/jboss-as-7.1.1.Final.tar.gz
 tar -xzf jboss-as-7.1.1.Final.tar.gz -C $JBOSS_HOME --strip-components=1
-cp $JBOSS_HOME/bin/init.d/jboss-as-standalone.sh /etc/rc.d/init.d/jboss
-chmod +x /etc/rc.d/init.d/jboss
-chkconfig --add jboss
+cp $JBOSS_HOME/bin/init.d/jboss-as-standalone.sh /etc/rc.d/init.d/jboss-as
+chmod +x /etc/rc.d/init.d/jboss-as
+chkconfig --add jboss-as
 chown -Rf jboss.jboss $JBOSS_HOME
 $JBOSS_HOME/bin/add-user.sh --silent=true jboss $JBOSS_PASSWORD
 keytool -genkey \
