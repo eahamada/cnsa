@@ -28,7 +28,7 @@ $JBOSS_HOME/bin/add-user.sh --silent=true jboss $JBOSS_PASSWORD
 cp $JBOSS_HOME/bin/init.d/jboss-as-standalone.sh /etc/rc.d/init.d/jboss
 chmod +x /etc/rc.d/init.d/jboss
 chkconfig --add jboss
-cat > /etc//jboss-as/jboss-as.conf <<EOF
+cat > /etc/jboss-as/jboss-as.conf <<EOF
 JBOSS_HOME=$JBOSS_HOME
 JBOSS_CONSOLE_LOG=/var/log/jboss-console.log
 JBOSS_USER=$JBOSS_USER
