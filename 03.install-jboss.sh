@@ -19,7 +19,6 @@ cd $WORKDIR
 
 groupadd jboss
 useradd -s /bin/bash -g jboss $JBOSS_USER -d $JBOSS_HOME
-chown -Rf jboss.jboss $JBOSS_HOME
 wget http://download.jboss.org/jbossas/7.1/jboss-as-7.1.1.Final/jboss-as-7.1.1.Final.tar.gz
 tar -xzf jboss-as-7.1.1.Final.tar.gz -C $JBOSS_HOME --strip-components=1
 
@@ -52,4 +51,5 @@ keytool -importcert \
 sed -i -e '29 i\<system-properties>\n<property name="javax.net.ssl.trustStore" value="'$KEYSTORE_PATH'/ldapTrustStore"/>\n <property name="javax.net.ssl.trustStorePassword" value="'$KEYSTORE_PASSWORD'"/>\n</system-propertes>' -- $JBOSS_HOME/standalone/configuration/standalone.xml
 sed -i -e '284 i\<any-ipv4-address/>' -e '287 i\<any-ipv4-address/>'  -e '284d;287d' -- $JBOSS_HOME/standalone/configuration/standalone.xml
 sed -i -e '200 i\<subsystem xmlns="urn:jboss:domain:naming:1.4">\n<bindings>\n<simple name="java:global/sepannuaire.ws.config.path" value="'$CONF_PATH_WS'" type="java.lang.String"/>\n<simple name="java:global/sepannuaire.web.config.path" value="'$CONF_PATH_WEB'" type="java.lang.String"/>\n</bindings>\n<remote-naming/>\n</subsystem>\n' -e '200d' -- $JBOSS_HOME/standalone/configuration/standalone.xml
+chown -Rf jboss.jboss $JBOSS_HOME
 service jboss start
