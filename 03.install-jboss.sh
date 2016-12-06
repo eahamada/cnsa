@@ -3,6 +3,7 @@
 unset CONF_PATH_WS CONF_PATH_WEB JBOSS_HOME JBOSS_PASSWORD JBOSS_USER KEYSTORE_PATH KEYSTORE_PASSWORD WORKDIR
 export CONF_PATH_WS=${CONF_PATH_WS:=/tmp}
 export CONF_PATH_WEB=${CONF_PATH_WEB:=/tmp/web}
+export JAVA_HOME=${JAVA_HOME:=/usr/java/jdk1.7.0_79}
 export JBOSS_HOME=${JBOSS_HOME:=/usr/share/jboss-as}
 export JBOSS_PASSWORD=${JBOSS_PASSWORD:=passw0rd}
 export JBOSS_GROUP=${JBOSS_GROUP:=jboss}
@@ -22,9 +23,9 @@ $JBOSS_PASSWORD
 $JBOSS_PASSWORD
 EOF
 cat >> $JBOSS_HOME/.bash_profile << EOF
-JAVA_HOME=/usr/java/jdk1.7.0_79
+JAVA_HOME=$JAVA_HOME
 export JAVA_HOME
-PATH=$JAVA_HOME/bin:$PATH
+PATH=\$JAVA_HOME/bin:$PATH
 export PATH
 EOF
 mkdir /etc/jboss-as && cat > /etc/jboss-as/jboss-as.conf <<EOF
@@ -38,7 +39,6 @@ cp $JBOSS_HOME/bin/init.d/jboss-as-standalone.sh /etc/rc.d/init.d/jboss
 chmod +x /etc/rc.d/init.d/jboss
 chkconfig --add jboss
 chown -Rf jboss.jboss $JBOSS_HOME
-su - jboss
 $JBOSS_HOME/bin/add-user.sh --silent=true jboss $JBOSS_PASSWORD
 keytool -genkey \
     -dname "CN=cnsa.fr,O=CNSA, L=Paris, ST=IDF, C=FR" \
@@ -59,5 +59,4 @@ keytool -importcert \
 sed -i -e '29 i\<system-properties>\n<property name="javax.net.ssl.trustStore" value="'$KEYSTORE_PATH'/ldapTrustStore"/>\n <property name="javax.net.ssl.trustStorePassword" value="'$KEYSTORE_PASSWORD'"/>\n</system-properties>' -- $JBOSS_HOME/standalone/configuration/standalone.xml
 sed -i -e '284 i\<inet-address value="${jboss.bind.address.management:0.0.0.0}"/>' -e '287 i\<inet-address value="${jboss.bind.address:0.0.0.0}"/>'  -e '284d;287d' -- $JBOSS_HOME/standalone/configuration/standalone.xml
 sed -i -e '200 i\<subsystem xmlns="urn:jboss:domain:naming:1.1">\n<bindings>\n<simple name="java:global/sepannuaire.ws.config.path" value="'$CONF_PATH_WS'" type="java.lang.String"/>\n<simple name="java:global/sepannuaire.web.config.path" value="'$CONF_PATH_WEB'" type="java.lang.String"/>\n</bindings>\n</subsystem>\n' -e '200d' -- $JBOSS_HOME/standalone/configuration/standalone.xml
-exit
 service jboss start
